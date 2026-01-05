@@ -1,2 +1,0 @@
-# Finance_autonomous_agentic_System
-Finance_autonomous_agentic_System
