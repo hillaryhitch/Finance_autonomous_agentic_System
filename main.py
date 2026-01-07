@@ -19,28 +19,90 @@ anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 # Register custom skills with Anthropic
 print("Registering custom skills with Anthropic...")
 
-safaricom_telco_skill = anthropic_client.beta.skills.create(
-    display_title="Safaricom Telecommunications Expertise.",
-    files=files_from_dir("skills/safaricom-telco-expertise"),
-    betas=["skills-2025-10-02"]
+# safaricom_telco_skill = anthropic_client.beta.skills.create(
+#     display_title="Safaricom Telecommunications Expertise.",
+#     files=files_from_dir("skills/safaricom-telco-expertise"),
+#     betas=["skills-2025-10-02"]
+# )
+
+# mpesa_skill = anthropic_client.beta.skills.create(
+#     display_title="M-PESA Financial Services.",
+#     files=files_from_dir("skills/mpesa-financial-services"),
+#     betas=["skills-2025-10-02"]
+# )
+
+# financial_metrics_skill = anthropic_client.beta.skills.create(
+#     display_title="Safaricom Financial Metrics.",
+#     files=files_from_dir("skills/financial-metrics"),
+#     betas=["skills-2025-10-02"]
+# )
+
+# ai_skill = anthropic_client.beta.skills.create(
+#     display_title="AI skills",
+#     files=files_from_dir("skills/safaricom-ai-innovation"),
+#     betas=["skills-2025-10-02"]
+# )
+
+import os
+from anthropic import Anthropic
+from anthropic.lib import files_from_dir
+
+# Initialize Anthropic client
+anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+def get_or_create_skill(client, display_title, files_path):
+    """Get existing skill or create new one if it doesn't exist"""
+    try:
+        # List existing skills
+        existing_skills = client.beta.skills.list(betas=["skills-2025-10-02"])
+        
+        # Check if skill with this title already exists
+        for skill in existing_skills.data:
+            if skill.display_title == display_title:
+                print(f"✓ Found existing skill: {display_title} (ID: {skill.id})")
+                return skill
+        
+        # If not found, create new skill
+        print(f"Creating new skill: {display_title}...")
+        skill = client.beta.skills.create(
+            display_title=display_title,
+            files=files_from_dir(files_path),
+            betas=["skills-2025-10-02"]
+        )
+        print(f"✓ Created skill: {display_title} (ID: {skill.id})")
+        return skill
+        
+    except Exception as e:
+        print(f"Error with skill '{display_title}': {e}")
+        raise
+
+# Register custom skills
+print("\n" + "="*60)
+print("REGISTERING CUSTOM SKILLS")
+print("="*60)
+
+safaricom_telco_skill = get_or_create_skill(
+    anthropic_client,
+    "Safaricom Telecommunications Expertise.",
+    "skills/safaricom-telco-expertise"
 )
 
-mpesa_skill = anthropic_client.beta.skills.create(
-    display_title="M-PESA Financial Services.",
-    files=files_from_dir("skills/mpesa-financial-services"),
-    betas=["skills-2025-10-02"]
+mpesa_skill = get_or_create_skill(
+    anthropic_client,
+    "M-PESA Financial Services.",
+    "skills/mpesa-financial-services"
 )
 
-financial_metrics_skill = anthropic_client.beta.skills.create(
-    display_title="Safaricom Financial Metrics.",
-    files=files_from_dir("skills/financial-metrics"),
-    betas=["skills-2025-10-02"]
+financial_metrics_skill = get_or_create_skill(
+    anthropic_client,
+    "Safaricom Financial Metrics.",
+    "skills/financial-metrics"
 )
 
-ai_skill = anthropic_client.beta.skills.create(
-    display_title="AI skills",
-    files=files_from_dir("skills/safaricom-ai-innovation"),
-    betas=["skills-2025-10-02"]
+ai_skill = get_or_create_skill(
+    anthropic_client,
+    "AI skills",
+    "skills/safaricom-ai-innovation"
 )
 
 
