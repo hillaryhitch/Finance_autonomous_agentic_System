@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
-    "agno>=2.3.21",
+    "agno>=2.3.23",
     "anthropic>=0.75.0",
     "boto3>=1.42.21",
     "chromadb>=1.4.0",
