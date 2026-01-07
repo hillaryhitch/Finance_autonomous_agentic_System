@@ -25,17 +25,65 @@ model_base = AwsBedrock(
     session=session
 )
 
-# Knowledge base setup
-knowledge = Knowledge(
-    vector_db=ChromaDb(
-        name="safaricom_finance_team",
-        path="./chroma_db",
-        embedder=HuggingfaceCustomEmbedder(
-            id="sentence-transformers/all-mpnet-base-v2"
+
+import os
+import shutil
+from pathlib import Path
+from agno.knowledge.knowledge import Knowledge
+from agno.knowledge.reader.pdf_reader import PDFReader
+from agno.vectordb.chroma import ChromaDb
+from agno.knowledge.embedder.huggingface import HuggingfaceCustomEmbedder
+
+print("🔍 CHECKING PDF SETUP...")
+pdf_path = Path("finance_data/safaricom_docs")
+print(f"📁 Folder: {pdf_path.exists()}")
+print(f"📄 PDFs: {[f for f in pdf_path.iterdir() if f.suffix.lower() == '.pdf']}")
+
+# CRITICAL: Force permissions + clear
+db_path = Path("./chroma_db")
+if db_path.exists():
+    shutil.rmtree(db_path)
+    print("🗑️ Cleared old DB")
+
+# TRY SIMPLEST EMBEDDER FIRST (no download)
+print("🚀 Creating Knowledge...")
+try:
+    knowledge = Knowledge(
+        vector_db=ChromaDb(
+            name="safaricom_finance_team",
+            path="./chroma_db",
+            embedder=HuggingfaceCustomEmbedder(
+                id="sentence-transformers/all-MiniLM-L6-v2"  # Smaller, faster
+            ),
         ),
-    ),
-    readers=[PDFReader(path="finance_data/safaricom_docs", chunk=True)],
-)
+        readers=[PDFReader(path=str(pdf_path), chunk=True)],
+    )
+    print("✅ Knowledge CREATED")
+    
+    # IMMEDIATE VERIFICATION
+    from chromadb import PersistentClient
+    client = PersistentClient(path="./chroma_db")
+    collection = client.get_or_create_collection("safaricom_finance_team")
+    count = collection.count()
+    print(f"✅ CHROMADB LIVE: {count} chunks indexed!")
+    print(f"📂 DB files: {list(Path('./chroma_db').iterdir())}")
+    
+except Exception as e:
+    print(f"❌ Knowledge FAILED: {e}")
+    print("💡 Fix: Run `pip install chromadb sentence-transformers torch`")
+    raise
+
+# Knowledge base setup
+# knowledge = Knowledge(
+#     vector_db=ChromaDb(
+#         name="safaricom_finance_team",
+#         path="./chroma_db",
+#         embedder=HuggingfaceCustomEmbedder(
+#             id="sentence-transformers/all-mpnet-base-v2"
+#         ),
+#     ),
+#     readers=[PDFReader(path="finance_data/safaricom_docs", chunk=True)],
+# )
 
 # Shared Safaricom skills (loaded per-agent as needed)
 def safaricom_skills(role_specific_folders=None):
@@ -90,7 +138,7 @@ business_case_agent = Agent(
     name="Business Case Analyst",
     role="Business Case Development & Evaluation",
     model=model_base,
-    skills=safaricom_skills(["./skills/business-case"]),
+        skills=safaricom_skills(["./skills/financial-metrics","./skills/mpesa-financial-services","./skills/safaricom-telco-expertise"]),
     knowledge=knowledge,
     tools=[DuckDuckGoTools(), ExaTools()],
     instructions=[
@@ -107,7 +155,7 @@ budget_planning_agent = Agent(
     name="Budget Planning Manager",
     role="Budgeting & Financial Planning",
     model=model_base,
-    skills=safaricom_skills(["./skills/budget-planning"]),
+    skills=safaricom_skills(["./skills/financial-metrics","./skills/mpesa-financial-services","./skills/safaricom-telco-expertise"]),
     knowledge=knowledge,
     tools=[],
     instructions=[
@@ -124,7 +172,7 @@ treasury_agent = Agent(
     name="Treasury Manager",
     role="Treasury & Cash Management",
     model=model_base,
-    skills=safaricom_skills(["./skills/treasury"]),
+    skills=safaricom_skills(["./skills/financial-metrics","./skills/mpesa-financial-services","./skills/safaricom-telco-expertise"]),
     knowledge=knowledge,
     tools=[DuckDuckGoTools()],
     instructions=[
@@ -141,7 +189,7 @@ financial_analyst_agent = Agent(
     name="Senior Financial Analyst",
     role="Financial Analysis & Strategic Insights",
     model=model_base,
-    skills=safaricom_skills(["./skills/financial-analysis"]),
+    skills=safaricom_skills(["./skills/financial-metrics","./skills/mpesa-financial-services","./skills/safaricom-telco-expertise"]),
     knowledge=knowledge,
     tools=[DuckDuckGoTools(), ExaTools()],
     instructions=[
