@@ -14,10 +14,10 @@ import os
 from anthropic.lib import files_from_dir
 
 # Initialize Anthropic client
-anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+# anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Register custom skills with Anthropic
-print("Registering custom skills with Anthropic...")
+# # Register custom skills with Anthropic
+# print("Registering custom skills with Anthropic...")
 
 # safaricom_telco_skill = anthropic_client.beta.skills.create(
 #     display_title="Safaricom Telecommunications Expertise.",
@@ -42,10 +42,6 @@ print("Registering custom skills with Anthropic...")
 #     files=files_from_dir("skills/safaricom-ai-innovation"),
 #     betas=["skills-2025-10-02"]
 # )
-
-import os
-from anthropic import Anthropic
-from anthropic.lib import files_from_dir
 
 # Initialize Anthropic client
 anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
